@@ -21,5 +21,37 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    return 0;
+    if(!getmsgcount()) {
+        fprintf(stderr, "Fatal: getmsgcount failed.\n");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+
 }
+
+int getmsgcount() {
+    curl = curl_easy_init();
+    if(!curl)  {
+        fprintf(stderr, "Error: curl_easy_init failed.\n");
+    }
+
+    curl_easy_setopt(curl, CURLOPT_CAINFO, "ca-bundle.crt");
+
+    curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_IMAPS);
+
+
+    curl_easy_setopt(curl, CURLOPT_USERNAME, username);
+    curl_easy_setopt(curl, CURLOPT_PASSWORD, password);
+    curl_easy_setopt(curl, CURLOPT_URL, "imaps://imap.gmail.com:993/");
+
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "LIST \"\" *");
+
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
+
+
+    curl_easy_cleanup(curl);
+    return 1;
+}
+
