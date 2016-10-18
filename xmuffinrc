@@ -1,0 +1,5 @@
+server=imapserver
+user=imapuser
+font=-*-utopia-medium-r-normal--40-*-*-*-*-*-iso8859-1
+folders=INBOX,spam
+command=xterm -T alpine -e alpine&
