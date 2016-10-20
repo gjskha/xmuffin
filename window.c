@@ -25,43 +25,45 @@ Display *dpy;
 Window win;
 GC gc;
 XFontStruct *font;
-int Ascent=33,Descent=0;
-int Width=55,Height=33;
-XColor FgXColor,HiXColor;
+int Ascent = 33, Descent = 0;
+int Width = 55, Height = 33;
+XColor FgXColor, HiXColor;
 Pixmap ShapeMask;           /* shape stuff */
 GC ShapeGC;                 /* shape stuff */
-int MaskWidth,MaskHeight;   /* shape stuff */
+int MaskWidth, MaskHeight;   /* shape stuff */
 Atom DeleteWindow;          /* Atom of delete window message */
 
 /* app-default related globals */
-char *FgColor="Black",*BgColor="White",*HiColor="Red";
-char *FontName=NULL;
-char *DisplayName=NULL;
+char *FgColor = "Black", *BgColor = "White", *HiColor = "Red";
+char *FontName = NULL;
+char *DisplayName = NULL;
 char *AppName;
 int Number;
-int Interval=INTERVAL_SPOOL;
+int Interval = INTERVAL_SPOOL;
 char SpoolFile[256];
 char Command[256];
 char Username[32];
 char Password[32];
 char NewMailCommand[256];
-char *Geometry=NULL;
-int Options=0;
+char *Geometry = NULL;
+int Options = 0;
 #define BELL_MODE       0x0001
 #define COMMAND_MODE    0x0002
 #define SHAPED_WINDOW   0x0004
 #define HILIGHT_MAIL    0x0008
 #define OFFLINE         0x0010
 
+#define MAXBUF  256
+
 char *BackupFonts[0] = { FONTNAME }; 
 
 struct config
 {
-   char server[MAXBUF];
-   char user[MAXBUF];
-   char font[MAXBUF];
-   char folders[MAXBUF];
-   char command[MAXBUF];
+    char server[MAXBUF];
+    char user[MAXBUF];
+    char font[MAXBUF];
+    char folders[MAXBUF];
+    char command[MAXBUF];
 };
 
 void usage();
@@ -80,21 +82,17 @@ void update()
     static int oldw =-1, oldh =- 1;
     int w,h;
 
-    if( Options&OFFLINE && Number == -1 ) {
-
+    if(Options&OFFLINE && Number == -1) {
         strcpy(str,"X");
-
     } else {
-        sprintf( str, "%d", Number );
+        sprintf(str,"%d",Number);
     }
 
-    w = ( Width - XTextWidth(font,str,strlen(str)) ) / 2;
-    h = ( Height + Ascent - Descent) / 2;
+    w = (Width - XTextWidth(font,str,strlen(str))) / 2;
+    h = (Height + Ascent - Descent) / 2;
 
-    if ( Options&SHAPED_WINDOW ) {
-
-        if ( Number != old_number || oldw != w || oldh != h ) {
-
+    if (Options&SHAPED_WINDOW) {
+        if (Number != old_number || oldw != w || oldh != h) {
             old_number = Number; 
             oldw = w; 
             oldh = h;
@@ -104,20 +102,19 @@ void update()
             XFillRectangle(dpy,ShapeMask,ShapeGC,0,0,MaskWidth,MaskHeight);
             XSetFunction(dpy,ShapeGC,GXset);
             XDrawString(dpy,ShapeMask,ShapeGC,0,Ascent,str,strlen(str));
-            XShapeCombineMask(dpy, win, ShapeBounding, 
-                w, h-Ascent, ShapeMask, ShapeSet);
+            XShapeCombineMask(dpy, win, ShapeBounding, w, h-Ascent, ShapeMask, ShapeSet);
         }
-
     } else {
-
         XClearWindow(dpy,win);
-
     }
 
-    if(Options&HILIGHT_MAIL)  {
-        XSetForeground(dpy,gc,Number?HiXColor.pixel:FgXColor.pixel);
+    if (Options&HILIGHT_MAIL) {
+        XSetForeground(
+            dpy,
+            gc, 
+            Number ? HiXColor.pixel : FgXColor.pixel
+        );
     }
-
     XDrawString(dpy,win,gc,w,h,str,strlen(str));
 }
 
@@ -128,7 +125,7 @@ void handler(int nothing)
     old = Number;
     count_mail();
 
-    if(old==Number) return;
+    if (old==Number) return;
 
     update();
 
@@ -170,7 +167,7 @@ void usage(void)
     printf("    -hilight [color]        Use a different foreground color when there\n"
            "                                is non-zero mail [%s]\n", HiColor);
     printf("    -update <number>        Check mail every <number> seconds\n"
-           "                                default %d sec local, %d sec remote\n", INTERVAL_SPOOL, INTERVAL_POP3);
+           "                                default %d sec local, %d sec remote\n", INTERVAL_SPOOL);
            /* "                                default %d seconds\n", */
     printf("    -bell                   Ring bell when count increases from zero\n");
     printf("    -mailcommand <command>  Command to execute on new mail arrival\n");
@@ -199,7 +196,7 @@ void ask_password()
         Password[i]='\0';
 }
 
-void parse_options( int argc,char *argv[] ) {
+void parse_options(int argc,char *argv[]) {
 
     int i;
     int intervalused = 0;
@@ -269,47 +266,47 @@ void parse_options( int argc,char *argv[] ) {
 
         } else if (!strcmp(argv[i],"-command")) {
 
-            if(++i==argc) { usage(); exit(2); };
+            if (++i == argc) { usage(); exit(2); };
             
            strcpy(Command,argv[i]);
 
         } else if (!strcmp(argv[i],"-geometry")) {
 
-            if(++i==argc)  { usage(); exit(2); };
+            if (++i == argc) { usage(); exit(2); };
 
             Geometry=argv[i];
 
         } else if (!strcmp(argv[i],"-name")) {
 
-            if(++i==argc)  { usage(); exit(2); };
+            if (++i == argc) { usage(); exit(2); };
 
             AppName = argv[i];
 
         } else if (!strcmp(argv[i],"-imap"))  {
             
-            if(++i==argc)  { usage(); exit(2); };
+            if (++i == argc) { usage(); exit(2); };
             
             strcpy(SpoolFile,argv[i]);
-
             Options |= USE_IMAP;
  
            if (!intervalused) 
                 Interval = INTERVAL_POP3;
 
         } else if (!strcmp(argv[i],"-username"))  {
-
-            if(++i==argc)  { usage(); exit(2); };
            
+            if (++i == argc) { usage(); exit(2); };
+            
             strcpy(Username,argv[i]);
 
         } else if (!strcmp(argv[i],"-password")) {
 
-            if(++i==argc)  { usage(); exit(2); };
+            if (++i == argc) { usage(); exit(2); };
 
             strcpy(Password,argv[i]);
             memset(argv[i],0,strlen(argv[i]));
 
-            if(!strcmp(Password,"ask"))  ask_password();
+            if (!strcmp(Password,"ask"))
+                ask_password();
 
         } else if (!strcmp(argv[i],"-offline")) {
 
@@ -319,8 +316,8 @@ void parse_options( int argc,char *argv[] ) {
 
             Options |= COMMAND_MODE;
 
-            if(++i==argc) { usage(); exit(2); };
-           
+            if (++i == argc) { usage(); exit(2); };
+
             strcpy(NewMailCommand, argv[i]);
 
         } else if (!strcmp(argv[i],"-h") || !strcmp(argv[i],"-help")) {
@@ -333,11 +330,12 @@ void parse_options( int argc,char *argv[] ) {
             printf("XMuffin " VERSION "\n"); exit(0);
 
         } else {
+
             fprintf(stderr,"Unknown option %s\n",argv[i]);
             fprintf(stderr,"Use -h for help\n");
             exit(2);
-        };
-    };
+        }
+    }
 }
 
 void init(int argc,char *argv[])
@@ -365,11 +363,12 @@ void init(int argc,char *argv[])
 /* end config stuff
  */
 
-    parse_options( argc, argv );
+    parse_options(argc,argv);
 
     dpy = XOpenDisplay(DisplayName);
 
     if (dpy == NULL) {
+
         fprintf(stderr,"Error: Can't open display: %s\n",DisplayName);
         exit(1);
     }
@@ -420,53 +419,77 @@ void init(int argc,char *argv[])
     }
 
     if (g&WidthValue) {
-        xsh->width=Width; 
-        xsh->flags|=USSize; 
+        xsh->width = Width; 
+        xsh->flags |= USSize; 
     } else {
         Width = xsh->width; 
     }
 
     if (g&HeightValue) {
-        xsh->height=Height; 
-        xsh->flags|=USSize;
-    } else            {Height = xsh->height; };
+        xsh->height = Height; 
+        xsh->flags |= USSize;
 
+    } else {
+        Height = xsh->height; 
+    }
 
-    win=XCreateSimpleWindow(dpy,RootWindow(dpy,screen),x,y,Width,Height,0,
-        BlackPixel(dpy,screen),WhitePixel(dpy,screen));
+    win = XCreateSimpleWindow(
+        dpy,
+        RootWindow(dpy,screen),
+        x,
+        y,
+        Width,
+        Height,
+        0,
+        BlackPixel(dpy,screen),
+        WhitePixel(dpy,screen)
+    );
 
     wmh->initial_state = NormalState;
     wmh->input = False;
     wmh->window_group = win;
     wmh->flags = StateHint | InputHint | WindowGroupHint;
-    classh->res_name = ( AppName == NULL ) ? "xmuffin" : AppName;
+    classh->res_name = (AppName == NULL) ? "xmuffin" : AppName;
     classh->res_class = "XBiff";
 
-    XmbSetWMProperties(dpy, win, "xmuffin", "xmuffin", argv, argc,
-                       xsh, wmh, classh);
-    XSetWMProtocols(dpy, win, &DeleteWindow, 1);
+    XmbSetWMProperties(
+        dpy,
+        win,
+        "xmuffin",
+        "xmuffin",
+        argv,
+        argc,
+        xsh,
+        wmh,
+        classh
+    );
+
+    XSetWMProtocols(dpy,win,&DeleteWindow,1);
     XSelectInput(dpy, win, ExposureMask|ButtonPressMask|StructureNotifyMask);
 
     XMapWindow(dpy, win);
-    /* if(Options&WM_MODE) win = icon; */     /* Use the icon window from now on */
 
-    gc=XCreateGC(dpy,win,0,NULL);
+    gc = XCreateGC(dpy,win,0,NULL);
 
     XAllocNamedColor(dpy,DefaultColormap(dpy,screen),FgColor,&color,&tmp);
-    XSetForeground(dpy,gc,color.pixel); FgXColor=color;
+    XSetForeground(dpy,gc,color.pixel);
+    FgXColor = color;
     XAllocNamedColor(dpy,DefaultColormap(dpy,screen),BgColor,&color,&tmp);
     XSetBackground(dpy,gc,color.pixel);
     XSetWindowBackground(dpy,win,color.pixel);
-    if(Options&HILIGHT_MAIL)  XAllocNamedColor(dpy,DefaultColormap(dpy,screen),
-                                                HiColor,&HiXColor,&tmp);
+
+    if(Options&HILIGHT_MAIL)
+        XAllocNamedColor(dpy,DefaultColormap(dpy,screen),HiColor,&HiXColor,&tmp);
+                                                
     XSetFont(dpy,gc,font->fid);
 
     if(Options&SHAPED_WINDOW)  {
-        MaskWidth = Width; MaskHeight = Height;
+        MaskWidth = Width; 
+        MaskHeight = Height;
         ShapeMask = XCreatePixmap(dpy,win,MaskWidth,MaskHeight,1);
         ShapeGC = XCreateGC(dpy,ShapeMask,0,NULL);
         XSetFont(dpy,ShapeGC,font->fid);
-    };
+    }
 }
 
 
@@ -482,9 +505,8 @@ int main(int argc,char *argv[])
 
     WM_PROTOCOLS = XInternAtom(dpy, "WM_PROTOCOLS", False);
 
-/* #ifdef OFFLINE_DEFAULT */
+    /* TODO */
     Options|=OFFLINE;
-/* #endif */
 
     count_mail();
 
@@ -523,53 +545,52 @@ int main(int argc,char *argv[])
                 if(xev.xclient.data.l[0] == DeleteWindow) {
                     XCloseDisplay(dpy);
                     exit(0);
-                };
-            };
+                }
+            }
             break;
         case DestroyNotify:
             XCloseDisplay(dpy);
             exit(0);
         /* default: */
-        };
-    };
+        }
+    }
 }
 
-////////////////////////////////////////////////////////
-// config stuff
+/* config stuff */
 
 struct config get_config(char *filename)
 {
-        struct config configstruct;
-        FILE *file = fopen (filename, "r");
+     struct config configstruct;
+     FILE *file = fopen (filename, "r");
 
-        if (file != NULL)
-        {
-                char line[MAXBUF];
-                int i = 0;
+    if (file != NULL)
+    {
+         char line[MAXBUF];
+         int i = 0;
 
-                while(fgets(line, sizeof(line), file) != NULL)
-                {
-                        char *cfline;
-                        cfline = strstr((char *)line,DELIM);
-                        cfline = cfline + strlen(DELIM);
+            while(fgets(line, sizeof(line), file) != NULL)
+            {
+                 char *cfline;
+                 cfline = strstr((char *)line,DELIM);
+                 cfline = cfline + strlen(DELIM);
    
-                        if (i == 0){
-                                memcpy(configstruct.server,cfline,strlen(cfline));
-                        } else if (i == 1){
-                                memcpy(configstruct.user,cfline,strlen(cfline));
-                        } else if (i == 2){
-                                memcpy(configstruct.font,cfline,strlen(cfline));
-                        } else if (i == 3){
-                                memcpy(configstruct.folders,cfline,strlen(cfline));
-                        } else if (i == 4){
-                                memcpy(configstruct.command,cfline,strlen(cfline));
-                        }
-                       
-                        i++;
-                } 
-                fclose(file);
-        } 
-        return configstruct;
-}
+                     if (i == 0) {
+                         memcpy(configstruct.server,cfline,strlen(cfline));
+                     } else if (i == 1) {
+                         memcpy(configstruct.user,cfline,strlen(cfline));
+                     } else if (i == 2) {
+                         memcpy(configstruct.font,cfline,strlen(cfline));
+                     } else if (i == 3) {
+                         memcpy(configstruct.folders,cfline,strlen(cfline));
+                     } else if (i == 4) {
+                         memcpy(configstruct.command,cfline,strlen(cfline));
+                     }
+                   
+                i++;
+            } 
+        close(file);
+    } 
 
+    return configstruct;
+}
 
